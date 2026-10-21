@@ -2,5 +2,7 @@
   "name": "Tea Picker",
   "description": "Climb through the clouds to an ink-wash tea garden, where an old tea picker matches your palate to traditional Chinese, Taiwanese and Japanese teas, or finds the same leaf as one you already love.",
   "permissions": [],
-  "scopes": []
+  "scopes": [],
+  "privacy_policy_url": "https://mitchlillie.github.io/tea-picker/legal/privacy.html",
+  "terms_url": "https://mitchlillie.github.io/tea-picker/legal/terms.html"
 }
