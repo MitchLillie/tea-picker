@@ -1,0 +1,7 @@
+node_modules
+.minis-cache
+*.tsbuildinfo
+.env
+music-takes/
+dist
+.DS_Store

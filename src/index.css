@@ -1,0 +1,98 @@
+@import "@shopify/shop-minis-react/styles";
+
+/*
+ * Ink-wash palette: ink on rice paper, cinnabar seal as the only colour.
+ * Washes are ink at fixed opacities so layered strokes read as one medium.
+ */
+@theme {
+  --color-ink: #1a1a18;
+  --color-ink-80: rgb(26 26 24 / 0.8);
+  --color-ink-60: rgb(26 26 24 / 0.6);
+  --color-ink-40: rgb(26 26 24 / 0.4);
+  --color-ink-20: rgb(26 26 24 / 0.2);
+  --color-ink-10: rgb(26 26 24 / 0.1);
+  --color-ink-5: rgb(26 26 24 / 0.05);
+  --color-paper: #efe8d8;
+  --color-paper-light: #f6f1e6;
+  --color-paper-dark: #e3d9c4;
+  --color-cinnabar: #b5321f;
+  --color-cinnabar-soft: rgb(181 50 31 / 0.12);
+
+  --font-serif: "Iowan Old Style", "Palatino", "Palatino Linotype", "Book Antiqua", "Noto Serif", Georgia, serif;
+  --font-han: "Songti SC", "STSong", "Noto Serif CJK SC", "Noto Serif SC", "Source Han Serif SC", serif;
+  --font-han-jp: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", "Noto Serif JP", serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  overscroll-behavior: none;
+}
+
+/* Paper grain, generated at runtime into --paper-grain (see ink/paper.ts). */
+.paper {
+  background-color: var(--color-paper);
+  background-image: var(--paper-grain, none),
+    radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(120 100 70 / 0.12) 100%);
+  background-size: 256px 256px, 100% 100%;
+}
+
+.small-caps {
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+}
+
+.han {
+  font-family: var(--font-han);
+}
+
+.han-jp {
+  font-family: var(--font-han-jp);
+}
+
+/* Brush-stroke range input. The track is painted by the component. */
+.ink-range {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 48px;
+  background: transparent;
+  touch-action: pan-y;
+}
+
+.ink-range::-webkit-slider-runnable-track {
+  height: 48px;
+  background: transparent;
+}
+
+.ink-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: 9px;
+  border-radius: 6px;
+  background: var(--color-cinnabar);
+  box-shadow: 0 0 0 2px var(--color-paper), 0 1px 4px rgb(26 26 24 / 0.35);
+  transform: rotate(-4deg);
+}
+
+.ink-range::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--color-cinnabar);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}

@@ -1,0 +1,5 @@
+title: Tea Picker
+description: A Shop Mini for traditional tea.
+# Only the public pages; internal notes stay in the repo but aren't published.
+exclude:
+  - ASSETS.md
