@@ -1,7 +1,7 @@
 import {useId, useMemo, type ReactNode} from 'react'
 
 import {SafeArea, Touchable} from '@shopify/shop-minis-react'
-import {motion} from 'motion/react'
+import {motion, useIsPresent} from 'motion/react'
 
 import {Rock} from '../scene/scenery'
 import {STONE, SEAT} from '../scene/Garden'
@@ -22,14 +22,16 @@ interface PageProps {
 
 /** A sheet of paper: seal back-button, calligraphic title, scrolling body. */
 export function Page({glyph, title, subtitle, children, footer}: PageProps) {
-  const {pop, reduced} = useApp()
+  const {pop, home, stack, reduced} = useApp()
+  // A page fading out must not swallow taps meant for what's beneath it.
+  const present = useIsPresent()
   return (
     <motion.div
-      className="paper absolute inset-0 flex flex-col"
+      className={`paper absolute inset-0 z-20 flex flex-col ${present ? '' : 'pointer-events-none'}`}
       initial={reduced ? {opacity: 0} : {opacity: 0, filter: 'blur(6px)'}}
       animate={{opacity: 1, filter: 'blur(0px)'}}
-      exit={{opacity: 0}}
-      transition={{duration: reduced ? 0.25 : 0.7, ease: [0.2, 0, 0, 1]}}
+      exit={{opacity: 0, transition: {duration: reduced ? 0.15 : 0.3}}}
+      transition={{duration: reduced ? 0.25 : 0.6, ease: [0.2, 0, 0, 1]}}
     >
       <SafeArea edges={['top']} className="shrink-0">
         <div className="flex items-center justify-between px-3 pt-1">
@@ -37,6 +39,11 @@ export function Page({glyph, title, subtitle, children, footer}: PageProps) {
             <Seal text="归" size={28} />
             <span className="small-caps text-[13px] text-ink-80">back</span>
           </Touchable>
+          {stack.length > 2 && (
+            <Touchable onClick={home} className="mr-auto flex min-h-12 items-center px-3" aria-label="Return to the garden">
+              <span className="small-caps text-[13px] text-ink-60">garden</span>
+            </Touchable>
+          )}
           <SoundToggle />
         </div>
         <div className="flex items-end gap-3 px-6 pb-3 pt-1">

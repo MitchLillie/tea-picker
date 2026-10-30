@@ -155,20 +155,31 @@ export function Journey({covered}: {covered: boolean}) {
   }
 
   // Dolly the camera down a row, then hand over to its screen.
+  // Only a dolly already heading into a row blocks another tap.
+  const walking = useRef(false)
   const walkRow = async (t: (typeof TERRACES)[number]) => {
-    if (lit || phase !== 'garden') return
+    if (walking.current || phase !== 'garden') return
+    walking.current = true
     setLit(t.id)
     setOrigin(`${((W * 0.62) / W) * 100}% ${(terraceY(t, W * 0.62) / H) * 100}%`)
-    await animate(zoom, 1, {duration: reduced ? 0.35 : 1.1, ease: [0.5, 0, 0.3, 1]})
+    await animate(zoom, 1, {duration: reduced ? 0.3 : 0.85, ease: [0.5, 0, 0.3, 1]})
+    walking.current = false
     push(ROW_SCREEN[t.id])
   }
 
-  // Back in the garden: pull the camera out again.
+  // Back in the garden: pull the camera out. Rows answer taps immediately;
+  // tapping one mid-pull simply dollies back in.
   useEffect(() => {
-    if (screen.id === 'garden' && zoom.get() > 0) {
-      animate(zoom, 0, {duration: reduced ? 0.3 : 1, ease: [0.3, 0, 0.3, 1]}).then(() => setLit(null))
-    }
+    if (screen.id !== 'garden') return
+    setLit(null)
+    if (zoom.get() > 0) animate(zoom, 0, {duration: reduced ? 0.25 : 0.6, ease: [0.2, 0, 0.2, 1]})
   }, [screen.id, zoom, reduced])
+
+  // If someone heads down a row while the picker is still walking in, let him
+  // be seated by the time they return.
+  useEffect(() => {
+    if (covered && picker === 'enter') setPicker('seated')
+  }, [covered, picker])
 
   const intro = phase === 'title' || phase === 'gate' || phase === 'climb' || phase === 'arrive'
 
@@ -176,7 +187,6 @@ export function Journey({covered}: {covered: boolean}) {
     <div
       ref={box}
       className="paper absolute inset-0 overflow-hidden"
-      style={{visibility: covered ? 'hidden' : 'visible'}}
       onClick={intro && phase !== 'gate' && phase !== 'title' ? finish : undefined}
     >
       {/* ── The climb ─────────────────────────────────────────────── */}
@@ -209,6 +219,7 @@ export function Journey({covered}: {covered: boolean}) {
         <Layer style={{scale: gardenScale, transformOrigin: origin}}>
           <TeaPicker
             mode={picker}
+            paused={covered}
             from={PICKER_FROM}
             to={SEAT}
             walkSeconds={9.5}
@@ -316,11 +327,13 @@ export function Journey({covered}: {covered: boolean}) {
       </motion.div>
 
       {/* Mute is always within reach; the choice is remembered for next time. */}
-      <SafeArea edges={['top']} className="absolute right-2 top-0 z-10">
-        <div onClick={e => e.stopPropagation()}>
-          <SoundToggle />
-        </div>
-      </SafeArea>
+      {!covered && (
+        <SafeArea edges={['top']} className="absolute right-2 top-0 z-10">
+          <div onClick={e => e.stopPropagation()}>
+            <SoundToggle />
+          </div>
+        </SafeArea>
+      )}
 
       {phase === 'gate' && (
         <motion.div

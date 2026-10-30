@@ -80,6 +80,8 @@ interface TeaPickerProps {
   /** Seconds spent walking from `from` to `to`. */
   walkSeconds?: number
   onSeated?: () => void
+  /** Stop animating (e.g. while a page covers the garden). */
+  paused?: boolean
 }
 
 /** Pre-drawn limb and costume shapes (local, unposed coordinates). */
@@ -130,6 +132,7 @@ export const TeaPicker = memo(function TeaPicker({
   to,
   walkSeconds = 6.5,
   onSeated,
+  paused,
 }: TeaPickerProps) {
   const art = useArt()
   const refs = {
@@ -174,6 +177,7 @@ export const TeaPicker = memo(function TeaPicker({
 
     if (mode === 'hidden') return
     if (mode === 'seated') {
+      if (paused) return
       let raf = 0
       const start = performance.now()
       const loop = (now: number) => {
@@ -224,7 +228,7 @@ export const TeaPicker = memo(function TeaPicker({
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [mode])
+  }, [mode, paused])
 
   if (mode === 'hidden') return null
 

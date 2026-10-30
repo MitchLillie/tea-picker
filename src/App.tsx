@@ -44,7 +44,7 @@ function Stage() {
     <div className="fixed inset-0 overflow-hidden">
       <Journey covered={covered} />
       <AnimatePresence initial={false}>
-        {covered && <ScreenView key={key(screen, stack.length)} screen={screen} />}
+{covered && <ScreenView key={key(screen, stack.length)} screen={screen} />}
       </AnimatePresence>
     </div>
   )

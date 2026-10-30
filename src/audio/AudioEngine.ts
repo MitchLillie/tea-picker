@@ -20,7 +20,9 @@ export class AudioEngine {
   private source: AudioBufferSourceNode | null = null
   private level = 0.7
   private muted = false
-  private starting: Promise<'playing' | 'blocked' | 'unavailable'> | null = null
+  /** Fade length of a requested start that is waiting for a gesture. */
+  private wanted: number | null = null
+  private listening = false
   private closed = false
 
   constructor(private url: string | null) {}
@@ -48,41 +50,72 @@ export class AudioEngine {
 
   /**
    * Begin (or resume) playback with a slow fade.
-   * 'blocked' means the WebView wants a user gesture first.
+   * 'blocked' means the WebView wants a user gesture first; in that case the
+   * engine keeps listening and starts on the next tap anywhere.
+   *
+   * iOS only unlocks audio when resume() is called synchronously inside a
+   * gesture handler, so resume() is requested here before any await.
    */
   start(fadeSeconds = 4): Promise<'playing' | 'blocked' | 'unavailable'> {
-    // Overlapping calls (StrictMode effects, focus events) share one attempt,
-    // so there is never more than one source playing.
-    if (!this.starting) {
-      this.starting = this.begin(fadeSeconds).finally(() => {
-        this.starting = null
-      })
-    }
-    return this.starting
-  }
-
-  private async begin(fadeSeconds: number): Promise<'playing' | 'blocked' | 'unavailable'> {
-    if (!this.url || !AC || this.closed) return 'unavailable'
+    if (!this.url || !AC || this.closed) return Promise.resolve('unavailable')
     this.ensure()
     const ctx = this.ctx
-    if (!ctx || !this.gain) return 'unavailable'
-    try {
-      await ctx.resume()
-    } catch {
-      return 'blocked'
+    if (!ctx || !this.gain) return Promise.resolve('unavailable')
+    this.wanted = fadeSeconds
+    const resumed = ctx.resume().then(
+      () => true,
+      () => false
+    )
+    return this.play(resumed, fadeSeconds)
+  }
+
+  private async play(resumed: Promise<boolean>, fadeSeconds: number) {
+    const ctx = this.ctx!
+    // resume() can stay pending forever without a gesture rather than reject.
+    await Promise.race([resumed, new Promise(r => setTimeout(r, 1000))])
+    if (ctx.state !== 'running') {
+      this.listenForGesture()
+      return 'blocked' as const
     }
-    if (ctx.state !== 'running') return 'blocked'
     const buffer = await this.buffer
-    if (!buffer || this.closed) return 'unavailable'
+    if (!buffer || this.closed) return 'unavailable' as const
+    // No await between this check and start(), so only one source is ever made.
     if (!this.source) {
       this.source = ctx.createBufferSource()
       this.source.buffer = buffer
       // Played once, not looped: it accompanies the climb and fades out by itself.
-      this.source.connect(this.gain)
+      this.source.connect(this.gain!)
       this.source.start()
     }
+    this.wanted = null
     this.ramp(this.muted ? 0 : this.level, fadeSeconds)
-    return 'playing'
+    return 'playing' as const
+  }
+
+  /** Until audio is running, the next tap anywhere unlocks it and plays. */
+  private listenForGesture() {
+    if (this.listening || typeof document === 'undefined') return
+    this.listening = true
+    const unlock = () => {
+      const ctx = this.ctx
+      if (!ctx || this.closed) return
+      ctx.resume().catch(() => undefined)
+      // A one-sample silent buffer, started inside the gesture, unlocks older WebKit.
+      const silent = ctx.createBufferSource()
+      silent.buffer = ctx.createBuffer(1, 1, 22050)
+      silent.connect(ctx.destination)
+      silent.start(0)
+      if (this.wanted !== null) this.play(Promise.resolve(true), this.wanted)
+      setTimeout(() => {
+        if (ctx.state === 'running') {
+          document.removeEventListener('touchend', unlock, true)
+          document.removeEventListener('click', unlock, true)
+          this.listening = false
+        }
+      }, 300)
+    }
+    document.addEventListener('touchend', unlock, true)
+    document.addEventListener('click', unlock, true)
   }
 
   get running() {
