@@ -3,7 +3,8 @@ import {memo, useMemo, type ReactNode} from 'react'
 import {motion, type MotionStyle} from 'motion/react'
 
 import {cun, range, ridge, rng} from './ink/brush'
-import {pineSprite, rockSprite} from './ink/sprites'
+import {pineSprite, rockSprite, type Sprite} from './ink/sprites'
+import {useSpriteUrl} from './ink/useSpriteUrl'
 
 /** Scene space. Every layer shares it so compositions line up. */
 export const W = 390
@@ -71,12 +72,19 @@ export const MountainRange = memo(function MountainRange({
   )
 })
 
+/** Draws a sprite once its blob URL exists. */
+export const SpriteImage = ({sprite}: {sprite: Sprite}) => {
+  const url = useSpriteUrl(sprite.svg)
+  if (!url) return null
+  return <image href={url} x={sprite.x} y={sprite.y} width={sprite.w} height={sprite.h} />
+}
+
 /** A windswept mountain pine (迎客松 manner), painted once as a sprite. */
 export const Pine = memo(function Pine({seed, scale = 1, flip}: {seed: number; scale?: number; flip?: boolean}) {
   const s = useMemo(() => pineSprite(seed), [seed])
   return (
     <g transform={`scale(${flip ? -scale : scale} ${scale})`}>
-      <image href={s.url} x={s.x} y={s.y} width={s.w} height={s.h} />
+      <SpriteImage sprite={s} />
     </g>
   )
 })
@@ -84,7 +92,7 @@ export const Pine = memo(function Pine({seed, scale = 1, flip}: {seed: number; s
 /** A boulder, painted once as a sprite; anchored at the middle of its base. */
 export const Rock = memo(function Rock({seed, w, h}: {seed: number; w: number; h: number}) {
   const s = useMemo(() => rockSprite(seed, w, h), [seed, w, h])
-  return <image href={s.url} x={s.x} y={s.y} width={s.w} height={s.h} />
+  return <SpriteImage sprite={s} />
 })
 
 /** A bank of cloud: overlapping soft paper-white masses with a faint grey belly. */

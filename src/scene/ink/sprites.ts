@@ -2,11 +2,12 @@ import {blob, range, rng, stroke} from './brush'
 
 /**
  * Painted sprites: art generated as SVG markup with its brush filters baked
- * in, turned into a blob URL once and drawn with <image>. Moving an image is
- * cheap; re-running displacement filters every frame is not.
+ * in, drawn with <image> from a blob URL that useSpriteUrl creates in an effect
+ * and revokes on unmount. Moving an image is cheap; re-running displacement
+ * filters every frame is not. The sprite itself is pure data (box + markup).
  */
 export interface Sprite {
-  url: string
+  svg: string
   /** Box in local units; the anchor (0,0) is where the sprite meets the ground. */
   x: number
   y: number
@@ -30,12 +31,11 @@ const FILTERS = `
 </filter>
 <filter id="w"><feGaussianBlur stdDeviation="3"/></filter>`
 
-const make = (key: string, box: Omit<Sprite, 'url'>, body: string): Sprite => {
+const make = (key: string, box: Omit<Sprite, 'svg'>, body: string): Sprite => {
   const hit = cache.get(key)
   if (hit) return hit
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box.x} ${box.y} ${box.w} ${box.h}" width="${box.w * 2}" height="${box.h * 2}"><defs>${FILTERS}</defs>${body}</svg>`
-  const url = URL.createObjectURL(new Blob([svg], {type: 'image/svg+xml'}))
-  const sprite = {...box, url}
+  const sprite = {...box, svg}
   cache.set(key, sprite)
   return sprite
 }

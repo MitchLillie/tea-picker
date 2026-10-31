@@ -1,14 +1,14 @@
 /**
- * Rice-paper grain: a small noise tile painted once into a canvas and exposed
- * to CSS as a blob URL in --paper-grain (Shop Minis discourage base64 images).
+ * Rice-paper grain: a small noise tile painted into a canvas. Pure: it touches
+ * no DOM style and creates no URLs; usePaperGrain exposes the blob to CSS.
  */
-export const installPaperGrain = () => {
+export const paintPaperGrain = (): Promise<Blob | null> => {
   const size = 256
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size
   const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  if (!ctx) return Promise.resolve(null)
   const img = ctx.createImageData(size, size)
   let seed = 7
   const rand = () => {
@@ -24,9 +24,5 @@ export const installPaperGrain = () => {
     img.data[i + 3] = rand() * 18 + fibre * 0.6
   }
   ctx.putImageData(img, 0, 0)
-  canvas.toBlob(blob => {
-    if (!blob) return
-    const url = URL.createObjectURL(blob)
-    document.documentElement.style.setProperty('--paper-grain', `url(${url})`)
-  })
+  return new Promise(resolve => canvas.toBlob(resolve))
 }

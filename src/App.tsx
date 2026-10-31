@@ -1,5 +1,3 @@
-import {useEffect} from 'react'
-
 import {AnimatePresence} from 'motion/react'
 
 import {Atlas} from './rows/Atlas'
@@ -9,7 +7,7 @@ import {Results} from './rows/Results'
 import {Credits, Settings} from './rows/Settings'
 import {TeaDetail} from './rows/TeaDetail'
 import {InkDefs} from './scene/ink/InkDefs'
-import {installPaperGrain} from './scene/ink/paper'
+import {usePaperGrain} from './scene/ink/usePaperGrain'
 import {Journey} from './scene/Journey'
 import {AppProvider, useApp, type Screen} from './state/app'
 
@@ -51,7 +49,7 @@ function Stage() {
 }
 
 export function App() {
-  useEffect(installPaperGrain, [])
+  usePaperGrain()
   return (
     <AppProvider>
       <InkDefs />
