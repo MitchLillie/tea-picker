@@ -4,7 +4,7 @@ import {useMotionValueEvent, type MotionValue} from 'motion/react'
 
 import {blob, range, rng, smoothClosed} from './ink/brush'
 import {pineSprite, rockSprite, type Sprite} from './ink/sprites'
-import {H, W} from './scenery'
+import {H, SpriteImage, W} from './scenery'
 
 /*
  * First-person stair climb, projected by hand.
@@ -199,7 +199,7 @@ export function Climb({z}: ClimbProps) {
           .reverse()
           .map(([it, i]) => (
             <g key={i} ref={el => (itemRefs.current[i] = el)} style={{display: 'none'}}>
-              <image href={it.sprite.url} x={it.sprite.x} y={it.sprite.y} width={it.sprite.w} height={it.sprite.h} />
+              <SpriteImage sprite={it.sprite} />
             </g>
           ))}
         {Array.from({length: SLOTS}, (_, i) => (
