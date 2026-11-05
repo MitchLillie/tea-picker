@@ -2,13 +2,46 @@
 
 Read-only investigation. Nothing was submitted, cancelled, or logged in.
 CLI inspected: `@shopify/shop-minis-cli` 0.3.26 (`node_modules/@shopify/shop-minis-cli/build/…`),
-`@shopify/cli-kit` 3.94.3. `npm ci` succeeded in the sandbox (no 407).
+`@shopify/cli-kit` 3.94.3. On the first `npm ci` in this worktree (empty `node_modules`) the install completed with no proxy error. A rerun with `node_modules` already present and a read-only filesystem fails with `EROFS` on `node_modules/.bin`, which is a sandbox quirk and not a proxy problem.
 
 ## Help output
 
-`npx shop-minis --help` (commands only): create, dev, submit, cancel-submission,
-check-submission, upgrade, info, setup, doctor, api-keys, reports, enable, disable,
-dashboard, build, features, install, verify-build.
+```
+$ npx shop-minis --help
+Usage: shop-minis [options] [command]
+
+CLI for Shop Minis development
+
+Options:
+  -V, --version                   output the version number
+  -h, --help                      display help for command
+
+Commands:
+  create [options] [mini name]    Create a new Shop Mini.
+  dev [options]                   Start a local development server.
+  submit [options]                Submit your Shop Mini for review.
+  cancel-submission [options]     Cancel a pending or testing submission.
+  check-submission [options]      Check the status of your submissions.
+  upgrade [options]               Upgrade your Shop Mini configuration to the
+                                  latest version.
+  info [options]                  Get relevant version info about OS, toolchain
+                                  and libraries
+  setup [options]                 Set up a new Mini.
+  doctor [options]                Diagnose and fix common Node.js, iOS and
+                                  Android issues.
+  api-keys                        Manage API keys for your Shop Mini.
+  reports                         Manage reports for your Shop Mini.
+  enable [options]                Enable your Shop Mini.
+  disable [options]               Disable your Shop Mini.
+  dashboard                       Launch the Shop Minis dashboard.
+  build [options]                 Build the Mini for production
+  features [options]              Manage enabled features.
+  install [options] [dependency]  Install a dependency, check existing
+                                  dependencies, or fix dependency issues.
+  verify-build [options]          Verify the Mini production build and
+                                  deterministic checks
+  help [command]                  display help for command
+```
 
 ```
 $ npx shop-minis check-submission --help
